@@ -99,7 +99,7 @@ class BRICK(nn.Module):
             output = y.transpose(1,2).reshape(y.shape[0], -1)
             return output, w_matrix, saved_x, saved_y
         
-        if self.node_classification:
+        if self.node_cls:
             output = self.out_pred_node(y.transpose(1, 2))
         else:
             output = self.out_pred(y)
