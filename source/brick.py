@@ -8,11 +8,11 @@ from modules.GST import Wavelet
 class BRICK(nn.Module):
     def __init__(self,
                  N=4,
-                 hidden_dim=256, 
                  L=1,
                  T=8,
+                 hidden_dim=256, 
                  num_classes=4,
-                 beta=1.0,
+                 beta=2.5,
                  feature_dim=39,
                  num_nodes=116,
                  use_pe=True,
@@ -47,8 +47,8 @@ class BRICK(nn.Module):
             N=N,
             hidden_dim=hidden_dim,
             beta=beta,
-            time_steps=T,
-            num_layers=L,
+            T=T,
+            L=L,
             mapping_type=mapping_type,
             num_modes=num_nodes
         )
@@ -82,7 +82,7 @@ class BRICK(nn.Module):
         if self.y_type == "linear":
             y = self.linear_y(features.transpose(1, 2)).transpose(1, 2)
         else:
-            y = self.conv_y(features.squeeze().T).T.unsqueeze(0)
+            y = self.conv_y(features.squeeze().T, torch.nonzero(adj, as_tuple=False).T).T.unsqueeze(0)
         saved_y = y.clone()
         x = self.gst(features, adj)
         x = torch.flatten(x, start_dim=2)
