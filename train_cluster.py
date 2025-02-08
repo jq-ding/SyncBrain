@@ -10,7 +10,7 @@ from torch import optim
 from torch.utils.data import DataLoader
 from accelerate import utils
 
-from source.utils import save_checkpoint, save_model, LinearWarmupScheduler
+from source.utils import LinearWarmupScheduler, logger
 from source.data.create_dataset import create_dataset
 from source.brick import BRICK  
 from spectralnet._losses._spectralnet_loss import SpectralNetLoss
@@ -19,16 +19,6 @@ from ema_pytorch import EMA
 from sklearn.metrics import normalized_mutual_info_score
 from sklearn.metrics.cluster import contingency_matrix
 from sklearn.cluster import SpectralClustering
-
-def logger():
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('[%(asctime)s] %(message)s', '%Y-%m-%d %H:%M:%S')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-    return logger
 
 def compute_purity(labels_true, labels_pred):
     matrix = contingency_matrix(labels_true, labels_pred)
@@ -47,7 +37,7 @@ def train_unsupervised(model, ema, optimizer, scheduler, loader, epoch, device, 
             features = features.unsqueeze(0)
         optimizer.zero_grad()
         outputs, w, x_features, c_features = model(features, adj)
-        loss = criterion(w, outputs) / 116  
+        loss = criterion(w, outputs) 
         loss.backward()
         optimizer.step()
         scheduler.step()
@@ -112,7 +102,6 @@ def main():
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--ema_decay", type=float, default=0.999, help="EMA decay factor")
     parser.add_argument("--epochs", type=int, default=300, help="Number of epochs")
-    parser.add_argument("--checkpoint_every", type=int, default=50, help="Save checkpoint every n epochs")
     parser.add_argument("--lr", type=float, default=1e-3, help="Learning rate")
     parser.add_argument("--warmup_iters", type=int, default=10)
     parser.add_argument("--batchsize", type=int, default=256)
@@ -121,15 +110,15 @@ def main():
     parser.add_argument("--num_nodes", type=int, default=116, help="Number of nodes")
     parser.add_argument("--feature_dim", type=int, default=39, help="Input feature dimension")
     parser.add_argument("--num_class", type=int, default=4, help="Number of classes")
-    parser.add_argument("--L", type=int, default=1, help="Number of Kuramoto layers")
+    parser.add_argument("--L", type=int, default=1, help="Number of Kuramoto solvers")
     parser.add_argument("--h", type=int, default=256, help="Hidden dimension")
-    parser.add_argument("--T", type=int, default=8, help="Number of recurrence steps")
+    parser.add_argument("--T", type=int, default=8, help="Number of time steps")
     parser.add_argument("--N", type=int, default=4, help="oscillator dimensions")
     parser.add_argument("--beta", type=float, default=1.0, help="Beta for Kuramoto solver")
     parser.add_argument("--use_pe", action="store_true", help="Use positional encoding")
     parser.add_argument("--node_cls", action="store_false", help="Node classification mode")
-    parser.add_argument("--y_type", type=str, default="linear", choices=["conv", "linear"], help="Y computation type ")
-    parser.add_argument("--mapping_type", type=str, default="conv", choices=["conv", "gconv"], help="Mapping type for BRICK")
+    parser.add_argument("--y_type", type=str, default="linear", choices=["conv", "linear"], help="y computation type ")
+    parser.add_argument("--mapping_type", type=str, default="conv", choices=["conv", "gconv"], help="Mapping type for y")
     parser.add_argument("--parcellation", action="store_false", help="Implement parcellation or not")
     
     args = parser.parse_args()
@@ -188,9 +177,6 @@ def main():
                     Recall: {rec:.4f}, 
                     F1: {f1:.4f} 
                     (Avg inference time: {elapsed_ms:.2f} ms)")
-        if (epoch + 1) % args.checkpoint_every == 0:
-            save_checkpoint(model, optimizer, epoch, train_loss, checkpoint_dir=".")
-            save_model(ema, epoch, checkpoint_dir=".", prefix="ema")
     
     torch.save(model.state_dict(), os.path.join(".", "model_final.pth"))
     torch.save(ema.state_dict(), os.path.join(".", "ema_model_final.pth"))
