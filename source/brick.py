@@ -67,7 +67,7 @@ class BRICK(nn.Module):
             nn.Linear(4 * hidden_dim, num_classes)  
         )
         
-        self.parcellation=parcellation
+        self.parcellation = parcellation
         
     def positional_encoding(self, d_model, length):
         pe = torch.zeros(d_model, length)
@@ -86,7 +86,7 @@ class BRICK(nn.Module):
         saved_y = y.clone()
         x = self.gst(features, adj)
         x = torch.flatten(x, start_dim=2)
-        x = self.patchify_x(x).transpose(1, 2)
+        x = self.x_processor(x).transpose(1, 2)
 
         if self.use_pe:
             y = y + self.pe_y[None, :, :]
@@ -96,7 +96,7 @@ class BRICK(nn.Module):
         
         if self.parcellation:
             w_matrix = saved_y.reshape(saved_y.shape[0], -1)
-            output = y.transpose(1,2).reshape(y.shape[0], -1)
+            output = y.transpose(1, 2).reshape(y.shape[0], -1)
             return output, w_matrix, saved_x, saved_y
         
         if self.node_classification:
