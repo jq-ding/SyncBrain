@@ -1,6 +1,17 @@
 import torch
 import os
+import logging
 from torch.optim.lr_scheduler import _LRScheduler
+
+def logger():
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('[%(asctime)s] %(message)s', '%Y-%m-%d %H:%M:%S')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    return logger
 
 class LinearWarmupScheduler(_LRScheduler):
     def __init__(self, optimizer, warmup_iters, last_epoch=-1):
