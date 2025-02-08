@@ -18,16 +18,6 @@ from source.data.create_dataset import create_dataset
 from source.brick import BRICK  
 from ema_pytorch import EMA  
 
-def logger():
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('[%(asctime)s] %(message)s', '%Y-%m-%d %H:%M:%S')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-    return logger
-
 
 def train_one_epoch(model, ema, optimizer, scheduler, train_loader, epoch, device, accelerator, logger):
     model.train()
@@ -99,6 +89,17 @@ def evaluate(model, accelerator, test_loader, device, logger):
                            torch.cat(all_x_feats, dim=0)], dim=1)
     metrics = compute_weighted_metrics(all_preds, all_targets)
     return metrics, all_feats, torch.cat(all_inputs, dim=0), all_targets
+
+
+def logger():
+    logger = logging.getLogger(__name__)
+    logger.setLevel(logging.INFO)
+    if not logger.handlers:
+        handler = logging.StreamHandler()
+        formatter = logging.Formatter('[%(asctime)s] %(message)s', '%Y-%m-%d %H:%M:%S')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+    return logger
 
 
 def main():
