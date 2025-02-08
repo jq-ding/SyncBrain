@@ -2,47 +2,6 @@ import torch
 import os
 from torch.optim.lr_scheduler import _LRScheduler
 
-def save_model(model, epoch, checkpoint_dir, prefix="checkpoint"):
-
-    if not os.path.exists(checkpoint_dir):
-        os.makedirs(checkpoint_dir)
-
-    checkpoint_path = os.path.join(checkpoint_dir, f"{prefix}_{epoch}.pth")
-
-    torch.save(
-        {
-            "epoch": epoch,
-            "model_state_dict": model.state_dict(),
-        },
-        checkpoint_path,
-    )
-
-    print(f"Model saved: {checkpoint_path}")
-
-
-def save_checkpoint(
-    model, optimizer, epoch, loss, checkpoint_dir, max_checkpoints=None
-):
-
-    if not os.path.exists(checkpoint_dir):
-        os.makedirs(checkpoint_dir)
-
-    checkpoint_path = os.path.join(checkpoint_dir, f"checkpoint_{epoch}.pth")
-
-    torch.save(
-        {
-            "epoch": epoch,
-            "model_state_dict": model.state_dict(),
-            "optimizer_state_dict": optimizer.state_dict(),
-            "loss": loss,
-        },
-        checkpoint_path,
-    )
-
-    print(f"Checkpoint saved: {checkpoint_path}")
-
-    manage_checkpoints(checkpoint_dir, max_checkpoints)
-
 class LinearWarmupScheduler(_LRScheduler):
     def __init__(self, optimizer, warmup_iters, last_iter=-1):
         self.warmup_iters = warmup_iters
