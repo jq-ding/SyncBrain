@@ -91,17 +91,6 @@ def evaluate(model, accelerator, test_loader, device, logger):
     return metrics, all_feats, torch.cat(all_inputs, dim=0), all_targets
 
 
-def logger():
-    logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
-    if not logger.handlers:
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('[%(asctime)s] %(message)s', '%Y-%m-%d %H:%M:%S')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-    return logger
-
-
 def main():
     parser = argparse.ArgumentParser()
     # parser.add_argument("--gpu", type=str, default="0", help="GPU id to use")
