@@ -265,5 +265,5 @@ class HCPA_byregion(Dataset):
         bold_region = bold_region.permute(1, 0)  
         label = self.labels[region_idx]-1      
 
-        return bold_region, bold_region, bold_region, label
+        return bold_region, bold_region, label
 
