@@ -60,7 +60,7 @@ class f_phi(nn.Module):
         edge_index = torch.nonzero(adj, as_tuple=False).T
         return edge_index
 
-class Kuramoto_Solver(nn.Module):  
+class SyncBrain_Solver(nn.Module):  
     def __init__(self, N, hidden_dim, beta, T, L, mapping_type='conv', num_modes=116):
         super().__init__()
         self.N = N

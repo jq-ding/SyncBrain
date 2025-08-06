@@ -1,9 +1,9 @@
 import argparse
 import os
-import logging
 import random
 import time
 import numpy as np
+import logging
 
 import torch
 import torch.nn as nn
@@ -13,9 +13,9 @@ from sklearn.model_selection import KFold
 
 from accelerate import Accelerator, utils
 from torch.distributed.nn.functional import all_gather
-from source.utils import LinearWarmupScheduler, compute_weighted_metrics, logger
-from source.data.create_dataset import create_dataset
-from source.brick import BRICK  
+from src.utils import LinearWarmupScheduler, compute_weighted_metrics
+from src.data.create_dataset import create_dataset
+from src.SyncBrain import SyncBrain  
 from ema_pytorch import EMA  
 
 
@@ -93,7 +93,7 @@ def evaluate(model, accelerator, test_loader, device, logger):
 
 def main():
     parser = argparse.ArgumentParser()
-    # parser.add_argument("--gpu", type=str, default="0", help="GPU id to use")
+    parser.add_argument("--gpu", type=str, default="0", help="GPU id to use")
     parser.add_argument("--seed", type=int, default=1234)
     parser.add_argument("--ema_decay", type=float, default=0.999, help="EMA decay factor")
 
@@ -114,10 +114,8 @@ def main():
     parser.add_argument("--beta", type=float, default=1.0, help="Beta for Kuramoto solver")
 
     parser.add_argument("--use_pe", action="store_true", help="Use positional encoding")
-    parser.add_argument("--node_cls", action="store_false", help="Node classification mode")
     parser.add_argument("--y_type", type=str, default="linear", choices=["conv", "linear"], help="y computation type ")
     parser.add_argument("--mapping_type", type=str, default="conv", choices=["conv", "gconv"], help="Mapping type for y")
-    parser.add_argument("--parcellation", action="store_false", help="Implement parcellation or not")
     
     args = parser.parse_args()
     utils.set_seed(args.seed)
@@ -160,7 +158,7 @@ def main():
             num_workers=args.num_workers,
         )
 
-        model = BRICK(
+        model = SyncBrain(
             N=args.N,
             hidden_dim=args.h,
             L=args.L,
@@ -170,10 +168,8 @@ def main():
             feature_dim=args.feature_dim,
             num_nodes=args.num_nodes,
             use_pe=args.use_pe,
-            node_cls=args.node_cls,
             y_type=args.y_type,
             mapping_type=args.mapping_type,
-            parcellation=args.parcellation,
         ).to(device)
 
         total_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -193,7 +189,7 @@ def main():
             metrics, features, inputs_data, gt = evaluate(model, accelerator, test_loader, device, logger)
             elapsed_ms = (time.time() - start_time) * 1000 / len(gt)
             test_acc, pre, rec, f1 = metrics
-            logger.info(f"Epoch {epoch+1}: Test Acc: {test_acc:.4f}, Precision: {pre:.4f}, Recall: {rec:.4f}, F1: {f1:.4f} "
+            logger.info(f"Epoch {epoch+1}: Loss: {epoch_loss:.4f}, Test Acc: {test_acc:.4f}, Precision: {pre:.4f}, Recall: {rec:.4f}, F1: {f1:.4f} "
                         f"(Avg inference time: {elapsed_ms:.2f} ms)")
             if test_acc > best_test_acc:
                 best_test_acc, best_pre, best_f1 = test_acc, pre, f1

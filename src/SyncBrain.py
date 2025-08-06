@@ -2,10 +2,10 @@ import math
 import torch
 import torch.nn as nn
 from torch_geometric.nn import GCNConv
-from modules.kuramoto_solver import KuramotoSolver
+from modules.SyncBrain_solver import SyncBrain_Solver
 from modules.GST import Wavelet 
 
-class BRICK(nn.Module):
+class SyncBrain(nn.Module):
     def __init__(self,
                  N=4,
                  L=1,
@@ -16,14 +16,11 @@ class BRICK(nn.Module):
                  feature_dim=39,
                  num_nodes=116,
                  use_pe=True,
-                 node_cls=False,
                  y_type='linear',
                  mapping_type='conv',
-                 parcellation=False,
                  ):
 
-        super(BRICK, self).__init__()
-        self.node_classification = node_cls
+        super(SyncBrain, self).__init__()
         self.y_type = y_type
         self.conv_y = nn.Sequential(
             GCNConv(feature_dim, hidden_dim),
@@ -43,7 +40,7 @@ class BRICK(nn.Module):
         self.register_buffer('pe_y', self.positional_encoding(hidden_dim, num_nodes))
         self.register_buffer('pe_x', self.positional_encoding(hidden_dim, num_nodes))
 
-        self.kuramoto_solver = KuramotoSolver(
+        self.SyncBrain_solver = SyncBrain_Solver(
             N=N,
             hidden_dim=hidden_dim,
             beta=beta,
@@ -60,14 +57,6 @@ class BRICK(nn.Module):
             nn.ReLU(),
             nn.Linear(4 * hidden_dim, num_classes),
         )
-
-        self.out_pred_node = nn.Sequential( 
-            nn.Linear(hidden_dim, 4 * hidden_dim),  
-            nn.ReLU(), 
-            nn.Linear(4 * hidden_dim, num_classes)  
-        )
-        
-        self.parcellation = parcellation
         
     def positional_encoding(self, d_model, length):
         pe = torch.zeros(d_model, length)
@@ -94,14 +83,6 @@ class BRICK(nn.Module):
 
         x, y, saved_x = self.kuramoto_solver(x, y, adj)
         
-        if self.parcellation:
-            w_matrix = saved_y.reshape(saved_y.shape[0], -1)
-            output = y.transpose(1, 2).reshape(y.shape[0], -1)
-            return output, w_matrix, saved_x, saved_y
-        
-        if self.node_classification:
-            output = self.out_pred_node(y.transpose(1, 2))
-        else:
-            output = self.out_pred(y)
+        output = self.out_pred(y)
 
         return output, saved_x, saved_y

@@ -1,16 +1,14 @@
-## Let Brain Rhythm Shape Machine Intelligence for Connecting Dots on Graphs
+## `SyncBrain`: Exploring Brain Functional Dynamics Through Neural Oscillatory Synchronization
 
 ```plaintext
-BRICK/
- ├─ source/
+AAAI26/
+ ├─ src/
  │   ├─ data/
  │   │   ├─ create_dataset.py    
- │   │   └─ dataset.py            # Data loading for different brain data
+ │   │   └─ dataset.py          # Loading brain data (HCP-A, HCP-YA, HCP-WM, ADNI, OASIS, PPMI, NIFD)
  │   ├─ modules/
- │   │   ├─ GST.py                # GST module (Graph Sattering Transform)
- │   │   └─ kuramoto_solver.py    # Kuramoto solver for oscillator synchronization
- │   ├─ brick.py                  # The main BRICK model
+ │   │   ├─ GST.py              # Graph Sattering Transform
+ │   │   └─ SyncBrain_solver.py    
+ │   ├─ SyncBrain.py            # The main SyncBrain model
  │   └─ utils.py                  
- ├─ train_brain.py                # Script for brain data
- ├─ train_cluster.py              # Script for unsupervised clustering
- └─ train_node.py                 # Script for node-level prediction
+ ├─ train_and_eval.py  
