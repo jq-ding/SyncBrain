@@ -1,7 +1,9 @@
 # SyncBrain
 
 > **SyncBrain: Exploring Brain Functional Dynamics Through Neural Oscillatory Synchronization**
+> 
 > Jiaqi Ding, Tingting Dan, Zhixuan Zhou, Guorong Wu
+> 
 > **AAAI 2026 (Oral)**
 
 ## Overview
