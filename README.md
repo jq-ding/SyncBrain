@@ -41,13 +41,6 @@ SyncBrain has been validated on the following large-scale neuroimaging cohorts:
 
 Please follow each dataset's official access process to obtain the raw data, then use `src/data/create_dataset.py` to preprocess into the format expected by the model.
 
-## Setup
-
-```bash
-conda create -n syncbrain python=3.10
-conda activate syncbrain
-pip install torch torch-geometric numpy scikit-learn nibabel
-```
 
 ## Usage
 
